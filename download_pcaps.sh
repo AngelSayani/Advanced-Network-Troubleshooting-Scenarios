@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Backup script to download PCAP files if main setup fails
+# Uses only approved sources from wiki.wireshark.org and netresec.com
 
 PCAP_DIR="/home/ubuntu/lab_files/pcaps"
 mkdir -p $PCAP_DIR
@@ -34,6 +35,47 @@ download_pcap() {
         echo "✗ Failed to download: $description"
     fi
 }
+
+# Working Wireshark Wiki URLs only
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/tcp-ecn-sample.pcap" \
+    "$PCAP_DIR/tcp_performance.pcap" \
+    "TCP with ECN (performance issues)"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dhcp.pcap" \
+    "$PCAP_DIR/dhcp.pcap" \
+    "DHCP traffic"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dns.cap" \
+    "$PCAP_DIR/dns.pcap" \
+    "DNS queries and responses"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/27707187aeb30df68e70c8fb9d614981/http.cap" \
+    "$PCAP_DIR/http.pcap" \
+    "Simple HTTP request/response"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/SIP_CALL_RTP_G711" \
+    "$PCAP_DIR/sip_rtp.pcap" \
+    "SIP call with RTP"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/telnet-raw.pcap" \
+    "$PCAP_DIR/telnet.pcap" \
+    "Telnet session (clear text)"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/tcp-ethereal-file1.trace" \
+    "$PCAP_DIR/tcp_large.pcap" \
+    "Large TCP transfer"
+
+download_pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/aaa.pcap" \
+    "$PCAP_DIR/sip_rtp_sample.pcap" \
+    "Sample SIP and RTP traffic"
 
 # Performance and latency issues - HTTP captures with delays
 download_pcap \
@@ -82,36 +124,37 @@ download_pcap \
     "$PCAP_DIR/http_netresec.pcap" \
     "HTTP traffic from NetResec"
 
-# Create combined capture for comprehensive analysis
-echo "Creating combined capture files..."
+# Create symbolic links for expected file names
+echo "Creating links for expected PCAP files..."
 
-# Check if we have necessary files and create symbolic links for expected names
-if [ -f "$PCAP_DIR/http_performance.pcap" ]; then
-    ln -sf "$PCAP_DIR/http_performance.pcap" "$PCAP_DIR/performance_issue.pcap"
+# Link files to expected names for the lab
+if [ -f "$PCAP_DIR/tcp_performance.pcap" ]; then
+    ln -sf "$PCAP_DIR/tcp_performance.pcap" "$PCAP_DIR/performance_issue.pcap"
 fi
 
-if [ -f "$PCAP_DIR/ftp_traffic.pcap" ]; then
-    ln -sf "$PCAP_DIR/ftp_traffic.pcap" "$PCAP_DIR/tcp_resets.pcap"
+if [ -f "$PCAP_DIR/tcp_large.pcap" ]; then
+    ln -sf "$PCAP_DIR/tcp_large.pcap" "$PCAP_DIR/tcp_resets.pcap"
 fi
 
-if [ -f "$PCAP_DIR/dhcp_capture.pcap" ] && [ -f "$PCAP_DIR/dns_capture.pcap" ]; then
-    # Merge DHCP and DNS if both exist
+if [ -f "$PCAP_DIR/telnet.pcap" ]; then
+    ln -sf "$PCAP_DIR/telnet.pcap" "$PCAP_DIR/non_standard_ports.pcap"
+fi
+
+if [ -f "$PCAP_DIR/sip_rtp_sample.pcap" ]; then
+    ln -sf "$PCAP_DIR/sip_rtp_sample.pcap" "$PCAP_DIR/voip_quality.pcap"
+fi
+
+# Combine DHCP and DNS if both exist
+if [ -f "$PCAP_DIR/dhcp.pcap" ] && [ -f "$PCAP_DIR/dns.pcap" ]; then
     if command -v mergecap >/dev/null 2>&1; then
         mergecap -w "$PCAP_DIR/dhcp_dns_issues.pcap" \
-            "$PCAP_DIR/dhcp_capture.pcap" \
-            "$PCAP_DIR/dns_capture.pcap" 2>/dev/null || \
-            ln -sf "$PCAP_DIR/dhcp_capture.pcap" "$PCAP_DIR/dhcp_dns_issues.pcap"
+            "$PCAP_DIR/dhcp.pcap" \
+            "$PCAP_DIR/dns.pcap" 2>/dev/null || \
+            cat "$PCAP_DIR/dhcp.pcap" "$PCAP_DIR/dns.pcap" > "$PCAP_DIR/dhcp_dns_issues.pcap"
     else
-        ln -sf "$PCAP_DIR/dhcp_capture.pcap" "$PCAP_DIR/dhcp_dns_issues.pcap"
+        cat "$PCAP_DIR/dhcp.pcap" "$PCAP_DIR/dns.pcap" > "$PCAP_DIR/dhcp_dns_issues.pcap" 2>/dev/null || \
+        cp "$PCAP_DIR/dhcp.pcap" "$PCAP_DIR/dhcp_dns_issues.pcap"
     fi
-fi
-
-if [ -f "$PCAP_DIR/voip_sip_rtp.pcap" ]; then
-    ln -sf "$PCAP_DIR/voip_sip_rtp.pcap" "$PCAP_DIR/voip_quality.pcap"
-fi
-
-if [ -f "$PCAP_DIR/smtp_traffic.pcap" ]; then
-    ln -sf "$PCAP_DIR/smtp_traffic.pcap" "$PCAP_DIR/non_standard_ports.pcap"
 fi
 
 # Set permissions
@@ -119,4 +162,4 @@ chown -R ubuntu:ubuntu $PCAP_DIR
 
 echo "PCAP download complete!"
 echo "Files available in: $PCAP_DIR"
-ls -la $PCAP_DIR/*.pcap 2>/dev/null | head -10
+ls -la $PCAP_DIR/*.pcap 2>/dev/null | head -15
