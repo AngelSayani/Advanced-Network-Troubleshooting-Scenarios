@@ -19,42 +19,54 @@ mkdir -p /home/ubuntu/lab_files/pcaps
 mkdir -p /home/ubuntu/lab_files/logs
 mkdir -p /home/ubuntu/lab_files/scripts
 
-# Download PCAP files from approved sources
+# Download PCAP files from Wireshark Wiki only
 echo "Downloading PCAP files for lab scenarios..."
 
-# Performance bottleneck scenario - HTTP with delays
+# HTTP performance scenario - with ECN showing congestion/delays
 wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/performance_issue.pcap \
-    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/http-wireshark-file00002.pcap.gz"
-gunzip -f /home/ubuntu/lab_files/pcaps/performance_issue.pcap.gz 2>/dev/null || true
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/tcp-ecn-sample.pcap"
 
-# TCP resets scenario
+# Large TCP transfer that may show resets
 wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/tcp_resets.pcap \
-    "https://www.netresec.com/files/pcap/ftp-example.pcap"
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/tcp-ethereal-file1.trace"
 
-# DHCP and DNS issues
-wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/dhcp_dns_issues.pcap \
-    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dhcp-and-dnsv1.pcap.gz"
-gunzip -f /home/ubuntu/lab_files/pcaps/dhcp_dns_issues.pcap.gz 2>/dev/null || true
+# DHCP capture
+wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/dhcp.pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dhcp.pcap"
 
-# VoIP quality issues - SIP and RTP
+# DNS capture  
+wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/dns.pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dns.cap"
+
+# Combine DHCP and DNS for troubleshooting scenario
+if [ -f "/home/ubuntu/lab_files/pcaps/dhcp.pcap" ] && [ -f "/home/ubuntu/lab_files/pcaps/dns.pcap" ]; then
+    cat /home/ubuntu/lab_files/pcaps/dhcp.pcap /home/ubuntu/lab_files/pcaps/dns.pcap > /home/ubuntu/lab_files/pcaps/dhcp_dns_issues.pcap 2>/dev/null || \
+    cp /home/ubuntu/lab_files/pcaps/dhcp.pcap /home/ubuntu/lab_files/pcaps/dhcp_dns_issues.pcap
+fi
+
+# VoIP/SIP with RTP
 wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/voip_quality.pcap \
-    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/rtp_example.pcap.gz"
-gunzip -f /home/ubuntu/lab_files/pcaps/voip_quality.pcap.gz 2>/dev/null || true
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/aaa.pcap"
 
-# Non-standard ports traffic
+# Telnet on standard port (example of clear text protocol)
 wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/non_standard_ports.pcap \
     "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/telnet-raw.pcap"
 
-# Additional backup downloads for comprehensive scenarios
-wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/http_performance.pcap \
-    "https://www.netresec.com/files/pcap/http.pcap"
+# HTTP simple capture
+wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/http_simple.pcap \
+    "https://wiki.wireshark.org/uploads/27707187aeb30df68e70c8fb9d614981/http.cap"
 
-wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/dns_issues.pcap \
-    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dns.cap"
+# Additional SIP/RTP for VoIP analysis
+wget $WGET_PROXY -q -O /home/ubuntu/lab_files/pcaps/sip_call.pcap \
+    "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/SIP_CALL_RTP_G711"
 
 # Generate simulated NetFlow logs
 echo "Generating simulated NetFlow logs..."
-bash /home/ubuntu/Advanced-Network-Troubleshooting-Scenarios/scripts/generate_netflow_logs.sh
+if [ -f "/home/ubuntu/Advanced-Network-Troubleshooting-Scenarios/scripts/generate_netflow_logs.sh" ]; then
+    bash /home/ubuntu/Advanced-Network-Troubleshooting-Scenarios/scripts/generate_netflow_logs.sh
+else
+    bash /home/ubuntu/lab_files/scripts/generate_netflow_logs.sh 2>/dev/null || true
+fi
 
 # Set proper permissions
 chown -R ubuntu:ubuntu /home/ubuntu/lab_files/
