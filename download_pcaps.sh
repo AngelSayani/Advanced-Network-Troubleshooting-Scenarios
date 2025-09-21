@@ -5,6 +5,15 @@
 PCAP_DIR="/home/ubuntu/lab_files/pcaps"
 mkdir -p $PCAP_DIR
 
+# Use proxy if available
+if [ ! -z "$http_proxy" ]; then
+    export http_proxy=$http_proxy
+    export https_proxy=$http_proxy
+    WGET_PROXY="--proxy=on"
+else
+    WGET_PROXY="--proxy=off"
+fi
+
 echo "Downloading PCAP files for lab scenarios..."
 
 # Function to download and extract if needed
@@ -14,7 +23,7 @@ download_pcap() {
     local description=$3
     
     echo "Downloading: $description"
-    if wget -q -O "$output" "$url"; then
+    if wget $WGET_PROXY -q -O "$output" "$url"; then
         # Check if file is gzipped and extract if needed
         if file "$output" | grep -q "gzip compressed"; then
             mv "$output" "$output.gz"
