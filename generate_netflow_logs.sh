@@ -19,7 +19,7 @@ EOF
 # Generate alerts log with IPs from captures
 cat > $LOG_DIR/network_alerts.log << 'EOF'
 2024-01-15 10:23:00 ALERT: High latency detected on link to 200.57.7.204 (avg RTT: 450ms)
-2024-01-15 10:23:45 WARNING: Multiple TCP resets from 200.57.7.194 to port 5060 (SIP)
+2024-01-15 10:23:45 WARNING: Multiple TCP resets from 200.57.7.194 from port 80
 2024-01-15 10:23:46 WARNING: Rapid connection resets detected - possible firewall intervention
 2024-01-15 10:25:30 ALERT: Packet loss detected: 12% loss on connection to 200.57.7.204
 2024-01-15 10:27:00 ALERT: Multiple RST packets with Win=0 detected - connection forcibly closed
