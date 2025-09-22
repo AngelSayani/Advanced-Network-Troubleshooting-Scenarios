@@ -22,9 +22,8 @@ cat > $LOG_DIR/network_alerts.log << 'EOF'
 2024-01-15 10:23:45 WARNING: Multiple TCP resets from 200.57.7.194 to port 5060 (SIP)
 2024-01-15 10:23:46 WARNING: Rapid connection resets detected - possible firewall intervention
 2024-01-15 10:25:30 ALERT: Packet loss detected: 12% loss on connection to 200.57.7.204
-2024-01-15 10:26:00 WARNING: SIP registration failures from 200.57.7.194
 2024-01-15 10:27:00 ALERT: Multiple RST packets with Win=0 detected - connection forcibly closed
-2024-01-15 10:28:00 WARNING: Port numbers higher than 4000 (Secure SIP) showing repeated connection failures
+2024-01-15 10:28:00 WARNING: Port numbers 5060 (SIP) showing repeated connection failures
 EOF
 
 # Generate DNS query log
